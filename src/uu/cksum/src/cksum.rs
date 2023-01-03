@@ -109,6 +109,7 @@ fn cksum(fname: &str) -> io::Result<(u32, usize)> {
 
 mod options {
     pub static FILE: &str = "file";
+    pub static UNTAGGED: &str = "untagged";
 }
 
 #[uucore::main]
@@ -122,10 +123,16 @@ pub fn uumain(args: impl uucore::Args) -> UResult<()> {
         None => vec![],
     };
 
+    let is_untagged = matches.get_flag(options::UNTAGGED);
+
     if files.is_empty() {
         let (crc, size) = cksum("-")?;
         println!("{} {}", crc, size);
         return Ok(());
+    }
+
+    if is_untagged {
+        println!("Called with untagged set");
     }
 
     for fname in &files {
@@ -149,5 +156,8 @@ pub fn uu_app() -> Command {
                 .hide(true)
                 .action(clap::ArgAction::Append)
                 .value_hint(clap::ValueHint::FilePath),
+        ).arg(
+            Arg::new(options::UNTAGGED)
+                .action(clap::ArgAction::SetTrue)
         )
 }
